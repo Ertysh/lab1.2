@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberAudit Pro — Офіційний Протокол</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #4f46e5;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text: #334155;
+        }
+
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        
+        h1, h2, h3 { text-align: center; color: var(--primary); }
+        .section-title { background: var(--primary); color: white; padding: 12px 20px; border-radius: 6px; margin-top: 40px; font-weight: 700; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px; }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.85em; color: #64748b; text-transform: uppercase; }
+        
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: 0.2s; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        /* Стилізація списку програм */
+        .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; background: #f1f5f9; padding: 20px; border-radius: 8px; margin-top: 10px; max-height: 400px; overflow-y: auto; }
+        .sw-item { font-size: 0.85em; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        /* Маркери поведінки */
+        .marker-box { background: #fdf2f8; border-left: 4px solid #db2777; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .marker-box label { color: #9d174d; }
+
+        button#generateBtn { width: 100%; padding: 20px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: 800; cursor: pointer; margin-top: 40px; transition: 0.3s; }
+        button#generateBtn:hover { background: #4338ca; transform: translateY(-2px); }
+
+        /* Звіт на А4 */
+        #reportView { display: none; }
+        .report-paper { padding: 20mm; background: white; font-family: 'Times New Roman', serif; color: black; line-height: 1.4; }
+        .report-header { text-align: center; border-bottom: 2px solid black; margin-bottom: 30px; padding-bottom: 10px; }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .report-table th, .report-table td { border: 1px solid black; padding: 10px; text-align: left; font-size: 11pt; }
+        .report-section-h { background: #f0f0f0; font-weight: bold; text-align: center !important; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 80px; }
+        .sig-line { border-top: 1px solid black; width: 220px; text-align: center; font-size: 0.9em; margin-top: 40px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            #reportView { display: block !important; }
+            body { padding: 0; background: white; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="formView" class="no-print">
+        <h1>🛡️ Технічний Аудит ІТС</h1>
+        <p style="text-align:center">Комплексна перевірка СУІБ, КСЗІ та поведінкових маркерів</p>
+
+        <div class="section-title">I. Об'єкт аудиту та локація</div>
+        <div class="form-row">
+            <div class="form-group"><label>Місто:</label><input type="text" id="city" placeholder="Напр: Київ"></div>
+            <div class="form-group"><label>Організація:</label><input type="text" id="company" placeholder="Назва підприємства"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>ПІБ співробітника:</label><input type="text" id="userName"></div>
+            <div class="form-group"><label>Посада:</label><input type="text" id="userPos"></div>
+        </div>
+
+        <div class="section-title">II. Конфігурація та Програмне Забезпечення</div>
+        <div class="form-group">
+            <label>Операційна система:</label>
+            <select id="os">
+                <option value="Windows 11">Windows 11</option>
+                <option value="Windows 10">Windows 10</option>
+                <option value="Linux Distribution">Linux Distribution</option>
+                <option value="macOS">macOS</option>
+                <option value="Застаріла (Win 7/XP)">Застаріла (Win 7/XP)</option>
+            </select>
+        </div>
+
+        <label>Оберіть встановлене ПЗ (згідно з реєстром):</label>
+        <div class="sw-grid" id="swGrid">
+            </div>
+
+        <div class="section-title">III. Аналіз поведінкових маркерів (Докази)</div>
+        <div class="marker-box">
+            <label>Чи бачить учень свої результати? Які маркери поведінки слугували доказом?</label>
+            <textarea id="evidence_results" rows="3" placeholder="Опишіть конкретні дії: напр. дитина самостійно перевірила код, виявила помилку та висвітлила результат у консолі..."></textarea>
+        </div>
+        
+        <div class="marker-box" style="border-left-color: #4f46e5; background: #f5f3ff;">
+            <label style="color: #4338ca;">Коментарі по мотивації та самостійності:</label>
+            <textarea id="evidence_motivation" rows="3" placeholder="Які маркери свідчать про залученість?"></textarea>
+        </div>
+
+        <div class="section-title">IV. Стан СУІБ та КСЗІ</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Статус КСЗІ:</label>
+                <select id="kszi"><option>Наявний атестат</option><option>В процесі</option><option>Відсутня</option></select>
+            </div>
+            <div class="form-group">
+                <label>Гігієна паролів:</label>
+                <select id="pass"><option>Менеджер паролів</option><option>Стікер/Записник</option><option>Пам'ятає</option></select>
+            </div>
+        </div>
+
+        <button id="generateBtn" onclick="generateReport()">СФОРМУВАТИ ОФІЦІЙНИЙ ПРОТОКОЛ</button>
+    </div>
+
+    <div id="reportView">
+        <div class="report-paper">
+            <div class="report-header">
+                <h2>ПРОТОКОЛ ТЕХНІЧНОГО АУДИТУ №<span id="rNum"></span></h2>
+                <p>Дата: <span id="rDate"></span> | Локація: м. <span id="rCity"></span></p>
+            </div>
+
+            <table class="report-table">
+                <tr><td colspan="2" class="report-section-h">1. ЗАГАЛЬНА ІНФОРМАЦІЯ</td></tr>
+                <tr><td>Підприємство</td><td id="rComp" style="font-weight:bold"></td></tr>
+                <tr><td>Об'єкт перевірки (ПІБ)</td><td id="rName"></td></tr>
+                <tr><td>Посада</td><td id="rPos"></td></tr>
+                <tr><td>Операційна система</td><td id="rOs"></td></tr>
+
+                <tr><td colspan="2" class="report-section-h">2. РЕЄСТР ПРОГРАМНОГО ЗАБЕЗПЕЧЕННЯ</td></tr>
+                <tr><td colspan="2" id="rSwList" style="font-size: 9pt; text-align: justify;"></td></tr>
+
+                <tr><td colspan="2" class="report-section-h">3. ПОВЕДІНКОВІ МАРКЕРИ ТА ДОКАЗИ</td></tr>
+                <tr><td>Докази результативності</td><td id="rEvid1"></td></tr>
+                <tr><td>Маркери мотивації</td><td id="rEvid2"></td></tr>
+
+                <tr><td colspan="2" class="report-section-h">4. СТАН ЗАХИЩЕНОСТІ (СУІБ/КСЗІ)</td></tr>
+                <tr><td>Статус КСЗІ</td><td id="rKszi"></td></tr>
+                <tr><td>Парольна політика</td><td id="rPass"></td></tr>
+            </table>
+
+            <div class="signatures">
+                <div><p>Аудитор (Студент):</p><div class="sig-line">Санжара Є.В.</div></div>
+                <div><p>Співробітник:</p><div class="sig-line">(Підпис)</div></div>
+            </div>
+
+            <div class="no-print" style="margin-top:50px; text-align:center;">
+                <button onclick="window.print()" style="background:#059669; color:white; padding:12px 30px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🖨️ ДРУКУВАТИ (А4)</button>
+                <button onclick="location.reload()" style="background:#64748b; color:white; padding:12px 30px; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">НОВИЙ АУДИТ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const swList = [
+        "Cisco Secure Client", "MS Office 365", "LibreOffice", "MS Visio", "MS Project", "7-Zip", "Adobe Reader", "PowerShell 7",
+        "ІІТ Користувач ЦСК-1", "ІІТ Агент підпису", "ІІТ Захист з'єднань", "Scan Client (Аскод)", "Callway", "1C", "Medoc", "АРМ Адміністратора",
+        "Webex", "Zoom", "Edge", "Google Chrome", "Notepad++", "Postman", "SoapUI", "JMeter", "Total Commander", "WinSCP", "Docker Desktop",
+        "PyCharm", "Intellij IDEA", "VS Code", "Git", "Python 3.11", "Node.js", "MySQL Workbench", "Oracle SQL Developer", "DBeaver", "pgAdmin",
+        "CrowdStrike Falcon", "Checkpoint Client", "KeePass", "WireShark", "MobaXterm"
+    ];
+
+    // Генерація чекбоксів ПЗ
+    const grid = document.getElementById('swGrid');
+    swList.sort().forEach(sw => {
+        const label = document.createElement('label');
+        label.className = 'sw-item';
+        label.innerHTML = `<input type="checkbox" name="sw" value="${sw}"> ${sw}`;
+        grid.appendChild(label);
+    });
+
+    function generateReport() {
+        const name = document.getElementById('userName').value;
+        if(!name) return alert("Вкажіть ПІБ об'єкта аудиту!");
+
+        // Дані
+        document.getElementById('rNum').innerText = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('rDate').innerText = new Date().toLocaleDateString('uk-UA');
+        document.getElementById('rCity').innerText = document.getElementById('city').value || "---";
+        document.getElementById('rComp').innerText = document.getElementById('company').value || "---";
+        document.getElementById('rName').innerText = name;
+        document.getElementById('rPos').innerText = document.getElementById('userPos').value;
+        document.getElementById('rOs').innerText = document.getElementById('os').value;
+
+        // ПЗ
+        let selectedSw = [];
+        document.querySelectorAll('input[name="sw"]:checked').forEach(c => selectedSw.push(c.value));
+        document.getElementById('rSwList').innerText = selectedSw.join(', ') || "Не вказано";
+
+        // Маркери
+        document.getElementById('rEvid1').innerText = document.getElementById('evidence_results').value || "Докази не надані";
+        document.getElementById('rEvid2').innerText = document.getElementById('evidence_motivation').value || "Маркери не зафіксовані";
+
+        // Безпека
+        document.getElementById('rKszi').innerText = document.getElementById('kszi').value;
+        document.getElementById('rPass').innerText = document.getElementById('pass').value;
+
+        // Перемикання виглядів
+        document.getElementById('formView').style.display = 'none';
+        document.getElementById('reportView').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+</script>
+
+</body>
+</html>
